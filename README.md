@@ -1,4 +1,4 @@
-# beats
+# Beats
 
 Heart analysis application
 
