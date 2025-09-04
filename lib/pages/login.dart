@@ -17,7 +17,6 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  String? _error; // retained (no longer displayed inline)
   bool _showSuccess = false;
 
   Future<void> _login() async {
@@ -45,7 +44,6 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() {
       _isLoading = true;
-      _error = null;
     });
 
     try {
@@ -95,7 +93,6 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       if (!mounted) return;
       final msg = e.toString();
-      setState(() => _error = msg);
       setState(() => _showSuccess = false);
       await showDialog(
         context: context,
@@ -261,7 +258,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             )
                           : _showSuccess
-                              ? const Icon(Icons.check, color: primaryColor, size: 26)
+                              ? const Icon(Icons.check, color: Colors.white, size: 26)
                               : const Text('Log In'),
                     ),
                   ),
