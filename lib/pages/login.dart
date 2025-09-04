@@ -18,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _error; // retained (no longer displayed inline)
+  bool _showSuccess = false;
 
   Future<void> _login() async {
     FocusScope.of(context).unfocus();
@@ -29,7 +30,8 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Missing Information'),
-          content: const Text('Please enter email and password'),
+          content: email.isEmpty && password.isEmpty ? const Text('Please enter email and password') :
+          email.isEmpty ? const Text('Please enter your email') : const Text('Please enter your password'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -82,30 +84,19 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       if (!mounted) return;
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Success'),
-          content: const Text('Login successful'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // close dialog
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const HomePage()),
-                );
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-      // TODO: Navigate to your home page
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
+      setState(() {
+        _isLoading = false;
+        _showSuccess = true;
+      });
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(_buildHomeRoute());
+      return;
     } catch (e) {
       if (!mounted) return;
       final msg = e.toString();
       setState(() => _error = msg);
+      setState(() => _showSuccess = false);
       await showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -124,6 +115,20 @@ class _LoginPageState extends State<LoginPage> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Route _buildHomeRoute() {
+    return PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (_, __, ___) => const HomePage(),
+      transitionsBuilder: (_, animation, __, child) {
+        final offsetAnim = Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
+        return SlideTransition(position: offsetAnim, child: child);
+      },
+    );
   }
 
   @override
@@ -238,7 +243,7 @@ class _LoginPageState extends State<LoginPage> {
                     width: 327,
                     height: 48,
                     child: FilledButton(
-                      onPressed: _isLoading ? null : _login,
+                      onPressed: (_isLoading || _showSuccess) ? null : _login,
                       style: FilledButton.styleFrom(
                         backgroundColor: primaryColor,
                         shape: RoundedRectangleBorder(
@@ -255,7 +260,9 @@ class _LoginPageState extends State<LoginPage> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Text('Log In'),
+                          : _showSuccess
+                              ? const Icon(Icons.check, color: primaryColor, size: 26)
+                              : const Text('Log In'),
                     ),
                   ),
                   const SizedBox(height: 20),
