@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
-import '../styling.dart';
+import '../widgets/styling.dart';
+import '../widgets/containers.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
 import 'home.dart';
@@ -151,11 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           children: [
             const SizedBox(height: 80),
-            SizedBox(
-              width: 185.5,
-              height: 70,
-              child: Image.asset('assets/icons/Logo.png', fit: BoxFit.contain),
-            ),
+            beatsLogo,
             const SizedBox(height: 40),
             Expanded(
               child: SingleChildScrollView(
@@ -166,65 +163,26 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Name', style: baseTextStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 48,
-                          child: TextField(
-                            controller: _nameCtrl,
-                            style: baseTextStyle,
-                            decoration: InputDecoration(
-                              border: buildInputBorder15(),
-                              enabledBorder: buildInputBorder15(),
-                              focusedBorder: buildInputBorder15(),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-                              ),
-                          ),
+                        buildLabeledInput(
+                          label: 'Name',
+                          hint: 'Your name',
+                          controller: _nameCtrl,
                         ),
                         const SizedBox(height: 20),
-                        Text('Email', style: baseTextStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 48,
-                          child: TextField(
-                            controller: _emailCtrl,
-                            keyboardType: TextInputType.emailAddress,
-                            style: baseTextStyle,
-                            decoration: InputDecoration(
-                              border: buildInputBorder15(),
-                              enabledBorder: buildInputBorder15(),
-                              focusedBorder: buildInputBorder15(),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-                              hintText: 'name@example.com',
-                              hintStyle: baseTextStyle.copyWith(color: secondaryColorMuted),
-                            ),
-                          ),
+                        buildLabeledInput(
+                          label: 'Email',
+                          hint: 'name@example.com',
+                          controller: _emailCtrl,
+                          keyboardType: TextInputType.emailAddress,
                         ),
                         const SizedBox(height: 20),
-                        Text('Password', style: baseTextStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 48,
-                          child: TextField(
-                            controller: _passwordCtrl,
-                            obscureText: _obscurePassword,
-                            style: baseTextStyle,
-                            decoration: InputDecoration(
-                              border: buildInputBorder15(),
-                              enabledBorder: buildInputBorder15(),
-                              focusedBorder: buildInputBorder15(),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-                              hintText: '••••••••',
-                              hintStyle: baseTextStyle.copyWith(color: secondaryColorMuted, fontSize: 30),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                  color: primaryColor,
-                                ),
-                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                              ),
-                            ),
-                          ),
+                        buildLabeledInput(
+                          label: 'Password',
+                          hint: '••••••••',
+                          controller: _passwordCtrl,
+                          isPassword: true,
+                          obscure: _obscurePassword,
+                          onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -237,46 +195,22 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
               child: Column(
                 children: [
-                  SizedBox(
-                    width: 327,
-                    height: 48,
-                    child: FilledButton(
-                      onPressed: (_isLoading || _showSuccess) ? null : _register,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        textStyle: buttonTextStyle,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : _showSuccess
-                              ? const Icon(Icons.check, color: Colors.white, size: 26)
-                              : const Text('Sign Up'),
-                    ),
+                  proceedButton(
+                    text: 'Sign Up',
+                    onPressed: _isLoading || _showSuccess ? () {} : _register,
+                    isLoading: _isLoading,
+                    showSuccess: _showSuccess,
                   ),
                   const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Have an account?', style: baseTextStyle),
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LoginPage()),
-                          );
-                        },
-                        child: linkTextStyleBuilder('Log in'),
-                      ),
-                    ],
+                  secondOptionText(
+                    prompt: 'Have an account?',
+                    actionText: 'Log in',
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                 ],

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'forgot_password.dart';
 import 'register.dart';
-import '../styling.dart';
+import '../widgets/containers.dart';
+import '../widgets/styling.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
 import 'home.dart';
@@ -142,14 +143,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           children: [
             const SizedBox(height: 80),
-            SizedBox(
-              width: 185.5,
-              height: 70,
-              child: Image.asset(
-                'assets/icons/Logo.png',
-                fit: BoxFit.contain,
-              ),
-            ),
+            beatsLogo,
             const SizedBox(height: 40),
             Expanded(
               child: SingleChildScrollView(
@@ -160,70 +154,33 @@ class _LoginPageState extends State<LoginPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Email',
-                          style: baseTextStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 48,
-                          child: TextField(
-                            controller: _emailCtrl,
-                            keyboardType: TextInputType.emailAddress,
-                            style: baseTextStyle,
-                            decoration: InputDecoration(
-                              border: buildInputBorder15(),
-                              enabledBorder: buildInputBorder15(),
-                              focusedBorder: buildInputBorder15(),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-                              hintText: 'name@example.com',
-                              hintStyle: baseTextStyle.copyWith(color: secondaryColorMuted),
-                            ),
-                          ),
+                        buildLabeledInput(
+                          label: 'Email',
+                          hint: 'name@example.com',
+                          controller: _emailCtrl,
+                          keyboardType: TextInputType.emailAddress,
                         ),
                         const SizedBox(height: 20),
-                        Text(
-                          'Password',
-                          style: baseTextStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 48,
-                          child: TextField(
-                            controller: _passwordCtrl,
-                            obscureText: _obscurePassword,
-                            style: baseTextStyle,
-                            decoration: InputDecoration(
-                              border: buildInputBorder15(),
-                              enabledBorder: buildInputBorder15(),
-                              focusedBorder: buildInputBorder15(),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-                              hintText: '••••••••',
-                              hintStyle: baseTextStyle.copyWith(color: secondaryColorMuted , fontSize: 30),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                  color: primaryColor,
-                                ),
-                                onPressed: () {
-                                  setState(() => _obscurePassword = !_obscurePassword);
-                                },
-                              ),
-                            ),
-                          ),
+                        buildLabeledInput(
+                          label: 'Password',
+                          hint: '••••••••',
+                          controller: _passwordCtrl,
+                          isPassword: true,
+                          obscure: _obscurePassword,
+                          onToggle: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
                         ),
                         const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
-                              );
-                            },
-                            child: linkTextStyleBuilder('Forgot password?'),
-                          ),
+                        buildForgotPasswordLink(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                            );
+                          },
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -236,51 +193,22 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
               child: Column(
                 children: [
-                  SizedBox(
-                    width: 327,
-                    height: 48,
-                    child: FilledButton(
-                      onPressed: (_isLoading || _showSuccess) ? null : _login,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        textStyle: buttonTextStyle,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : _showSuccess
-                              ? const Icon(Icons.check, color: Colors.white, size: 26)
-                              : const Text('Log In'),
-                    ),
+                  proceedButton(
+                    text: 'Log In',
+                    onPressed: _login,
+                    isLoading: _isLoading,
+                    showSuccess: _showSuccess,
                   ),
                   const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Don't have an account?",
-                        style: baseTextStyle,
-                      ),
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const RegisterPage()),
-                          );
-                        },
-                        child: linkTextStyleBuilder('Sign up'),
-                      )
-                    ],
+                  secondOptionText(
+                    prompt: "Don't have an account?",
+                    actionText: 'Sign up',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      );
+                    },
                   ),
                   const SizedBox(height: 8),
                 ],
