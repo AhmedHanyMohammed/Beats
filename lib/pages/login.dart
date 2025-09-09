@@ -3,8 +3,7 @@ import 'forgot_password.dart';
 import 'register.dart';
 import '../widgets/containers.dart';
 import '../widgets/styling.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
+import '../routes/routes.dart';
 import 'home.dart';
 
 class LoginPage extends StatefulWidget {
@@ -48,39 +47,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final url = Uri.parse(
-        'https://beats-94c51-default-rtdb.europe-west1.firebasedatabase.app/users.json',
-      );
-      final res = await get(url);
-      if (res.statusCode != 200) {
-        throw 'Server error (${res.statusCode})';
-      }
-
-      final decoded = json.decode(res.body);
-      if (decoded == null) {
-        throw 'No users found';
-      }
-
-      Map<String, dynamic>? matchedUser;
-      if (decoded is Map) {
-        for (final entry in decoded.entries) {
-          final value = entry.value;
-          if (value is Map &&
-              (value['email'] ?? '').toString().toLowerCase() ==
-                  email.toLowerCase()) {
-            matchedUser = Map<String, dynamic>.from(value);
-            break;
-          }
-        }
-      }
-
-      if (matchedUser == null) {
-        throw 'Email not found';
-      }
-
-      if (matchedUser['password'] != password) {
-        throw 'Wrong password';
-      }
+      await ApiRoutes.login(email, password);
 
       if (!mounted) return;
       setState(() {

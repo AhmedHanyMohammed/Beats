@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 import '../widgets/styling.dart';
 import '../widgets/containers.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
+import '../routes/routes.dart';
 import 'home.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -63,34 +62,7 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      final url = Uri.parse(
-        'https://beats-94c51-default-rtdb.europe-west1.firebasedatabase.app/users.json',
-      );
-      final res = await get(url);
-      if (res.statusCode != 200) throw 'Server error (${res.statusCode})';
-
-      final decoded = json.decode(res.body);
-      if (decoded is Map) {
-        for (final entry in decoded.entries) {
-            final value = entry.value;
-            if (value is Map &&
-                (value['email'] ?? '').toString().toLowerCase() ==
-                    email.toLowerCase()) {
-              throw 'Email already in use';
-            }
-        }
-      }
-
-      final postRes = await post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'name': name,
-          'email': email,
-          'password': password,
-        }),
-      );
-      if (postRes.statusCode >= 400) throw 'Could not create user';
+      await ApiRoutes.registerUser(name, email, password);
 
       if (!mounted) return;
       setState(() {
@@ -109,7 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Registration Failed'),
-            content: Text(msg),
+          content: Text(msg),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
