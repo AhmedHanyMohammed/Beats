@@ -5,7 +5,7 @@ final Widget beatsLogo = SizedBox(
   width: 185.5,
   height: 70,
   child: Image.asset(
-    'assets/icons/Logo.png',
+    'assets/images/Logo.png',
     fit: BoxFit.contain,
   ),
 );
