@@ -1,198 +1,208 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Centralized CRUD utilities for Firebase Realtime Database.
-/// Example usage:
-/// - await ApiRoutes.login(email, password);
-/// - final id = await ApiRoutes.registerUser(name, email, password);
-/// - final users = await ApiRoutes.getAll('users');
-/// - final uid = await ApiRoutes.create('users', {...});
-/// - await ApiRoutes.update('users', uid, {...});
-/// - await ApiRoutes.delete('users', uid);
 class ApiRoutes {
   ApiRoutes._();
 
-  static const String _base =
-      'https://beats-94c51-default-rtdb.europe-west1.firebasedatabase.app';
+  // Base URL of your Swagger API.
+  static const String _apiBase = 'https://api.test.eye-ecg.eye-apps.com';
 
   static final http.Client _client = http.Client();
+  static String? _authToken;
 
-  static Uri _endpoint(
-    String collection, {
-    String? id,
-    Map<String, String>? query,
-  }) {
-    final path = id == null ? '/$collection.json' : '/$collection/$id.json';
-    return Uri.parse('$_base$path').replace(queryParameters: query);
-  }
-
-  // ---------- Generic CRUD ----------
-
-  /// Read all items in a collection. Returns Map[id, item] or null if empty.
-  static Future<Map<String, dynamic>?> getAll(String collection) async {
-    final res = await _client.get(_endpoint(collection));
-    _throwIfError(res);
-    final decoded = json.decode(res.body);
-    return decoded is Map<String, dynamic> ? decoded : null;
-  }
-
-  /// Read one item by id. Returns Map or null if not found.
-  static Future<Map<String, dynamic>?> getOne(
-      String collection, String id) async {
-    final res = await _client.get(_endpoint(collection, id: id));
-    _throwIfError(res);
-    final decoded = json.decode(res.body);
-    if (decoded == null) return null;
-    return Map<String, dynamic>.from(decoded as Map);
-  }
-
-  /// Create a new item. Returns generated id.
-  static Future<String> create(
-      String collection, Map<String, dynamic> data) async {
-    final res = await _client.post(
-      _endpoint(collection),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(data),
-    );
-    _throwIfError(res, minOk: 200, maxOk: 299);
-    final decoded = json.decode(res.body);
-    final id = decoded?['name'] as String?;
-    if (id == null || id.isEmpty) {
-      throw Exception('Create failed: missing id');
-    }
-    return id;
-  }
-
-  /// Update fields of an item (PATCH).
-  static Future<void> update(
-      String collection, String id, Map<String, dynamic> data) async {
-    final res = await _client.patch(
-      _endpoint(collection, id: id),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(data),
-    );
-    _throwIfError(res, minOk: 200, maxOk: 299);
-  }
-
-  /// Replace an item (PUT).
-  static Future<void> replace(
-      String collection, String id, Map<String, dynamic> data) async {
-    final res = await _client.put(
-      _endpoint(collection, id: id),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(data),
-    );
-    _throwIfError(res, minOk: 200, maxOk: 299);
-  }
-
-  /// Delete an item by id.
-  static Future<void> delete(String collection, String id) async {
-    final res = await _client.delete(_endpoint(collection, id: id));
-    _throwIfError(res, minOk: 200, maxOk: 299);
-  }
-
-  /// Firebase query: orderBy=field, equalTo=value. Returns Map[id, item].
-  static Future<Map<String, dynamic>> queryEqualTo(
-    String collection, {
-    required String field,
-    required dynamic value,
-  }) async {
-    final query = {
-      'orderBy': json.encode(field),
-      'equalTo': json.encode(value),
+  // Headers helper
+  static Map<String, String> _jsonHeaders({bool withAuth = false}) {
+    final headers = <String, String>{
+      'Content-Type': 'application/json; charset=utf-8',
+      'Accept': 'application/json',
     };
-    final uri = _endpoint(collection, query: query);
-    final res = await _client.get(uri);
+    if (withAuth && _authToken != null && _authToken!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $_authToken';
+    }
+    return headers;
+  }
 
-    // Fast path: OK
-    if (res.statusCode >= 200 && res.statusCode <= 299) {
-      final decoded = json.decode(res.body);
-      if (decoded is Map<String, dynamic>) return decoded;
-      return <String, dynamic>{};
+  // Fallback form headers
+  static Map<String, String> _formHeaders({bool withAuth = false}) {
+    final headers = <String, String>{
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json',
+    };
+    if (withAuth && _authToken != null && _authToken!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $_authToken';
+    }
+    return headers;
+  }
+
+  static Uri _api(String path, [Map<String, String>? query]) {
+    return Uri.parse('$_apiBase$path').replace(queryParameters: query);
+  }
+
+  // Smart POST: try JSON, fallback to x-www-form-urlencoded for 400/415/422
+  static Future<http.Response> _postSmart(
+    String path,
+    Map<String, dynamic> data, {
+    bool withAuth = false,
+  }) async {
+    final uri = _api(path);
+    // 1) Try JSON
+    final res1 = await _client.post(
+      uri,
+      headers: _jsonHeaders(withAuth: withAuth),
+      body: json.encode(data),
+    );
+    if (res1.statusCode >= 200 && res1.statusCode <= 299) return res1;
+
+    // 2) Fallback to form if common client-side issues appear
+    if (res1.statusCode == 400 || res1.statusCode == 415 || res1.statusCode == 422) {
+      final formBody = <String, String>{};
+      data.forEach((k, v) => formBody[k] = v?.toString() ?? '');
+      final res2 = await _client.post(
+        uri,
+        headers: _formHeaders(withAuth: withAuth),
+        body: formBody,
+      );
+      if (res2.statusCode >= 200 && res2.statusCode <= 299) return res2;
+      return res2; // Let caller throw with detailed body.
     }
 
-    // Graceful fallback for common 400 from Firebase (e.g., missing .indexOn).
-    if (res.statusCode == 400) {
-      try {
-        final all = await getAll(collection);
-        if (all == null) return <String, dynamic>{};
-        final out = <String, dynamic>{};
-        all.forEach((k, v) {
-          if (v is Map && v[field] == value) out[k] = v;
-        });
-        return out;
-      } catch (_) {
-        // fall through to throw detailed error
-      }
-    }
-
-    // Throw with detailed body so UI shows the real reason.
-    _throwIfError(res);
-    return <String, dynamic>{};
+    return res1;
   }
 
-  // ---------- Users helpers ----------
+  // --------------- Account endpoints ---------------
 
-  static Future<bool> emailExists(String email) async {
-    final r = await queryEqualTo('users', field: 'email', value: email.toLowerCase());
-    return r.isNotEmpty;
-  }
-
-  /// Finds the first user by email. Returns { ...user, id } or null.
-  static Future<Map<String, dynamic>?> findUserByEmail(String email) async {
-    final r = await queryEqualTo('users', field: 'email', value: email.toLowerCase());
-    if (r.isEmpty) return null;
-    final entry = r.entries.first;
-    final user = Map<String, dynamic>.from(entry.value as Map);
-    user['id'] = entry.key;
-    return user;
-  }
-
-  /// Authenticates user by email/password. Returns user map with 'id'.
   static Future<Map<String, dynamic>> login(String email, String password) async {
-    final user = await findUserByEmail(email);
-    if (user == null) {
-      throw Exception('Email not found');
+    final emailNorm = email.trim().toLowerCase();
+    final res = await _postSmart(
+      '/api/Account/login',
+      {
+        'email': emailNorm,
+        'password': password,
+      },
+      withAuth: false,
+    );
+    _throwIfError(res);
+
+    final body = res.body.trim();
+    if (body.isEmpty) return <String, dynamic>{};
+    final obj = _tryParseJson(body);
+
+    // Try to capture a token if backend returns one.
+    final token = _extractToken(obj);
+    if (token != null && token.isNotEmpty) {
+      _authToken = token;
     }
-    if (user['password'] != password) {
-      throw Exception('Wrong password');
-    }
-    return user;
+
+    return obj ?? <String, dynamic>{};
   }
 
-  /// Registers a new user. Returns generated id.
+  /// POST /api/Account/register
   static Future<String> registerUser(
-      String name, String email, String password) async {
-    if (await emailExists(email)) {
-      throw Exception('Email already in use');
-    }
-    final id = await create('users', {
-      'name': name,
-      'email': email.toLowerCase(),
-      'password': password,
-    });
-    return id;
+    String fullName,
+    String email,
+    String password,
+  ) async {
+    final emailNorm = email.trim().toLowerCase();
+    final res = await _postSmart(
+      '/api/Account/register',
+      {
+        // Send both common name keys if backend ignores unknowns; last write wins on duplicates,
+        // so prefer the key you expect your API to use (fullName).
+        'fullName': fullName,
+        'email': emailNorm,
+        'password': password,
+      },
+      withAuth: false,
+    );
+    _throwIfError(res);
+    return 'ok';
   }
 
-  // ---------- Utils ----------
+  /// POST /api/Account/forgot-password
+  static Future<void> forgotPassword(String email) async {
+    final emailNorm = email.trim().toLowerCase();
+    final res = await _postSmart(
+      '/api/Account/forgot-password',
+      {'email': emailNorm},
+      withAuth: false,
+    );
+    _throwIfError(res);
+  }
 
+  /// POST /api/Account/reset-password
+  static Future<void> resetPassword(
+    String email,
+    String token,
+    String newPassword,
+  ) async {
+    final emailNorm = email.trim().toLowerCase();
+    final res = await _postSmart(
+      '/api/Account/reset-password',
+      {
+        'email': emailNorm,
+        'token': token,
+        'newPassword': newPassword,
+      },
+      withAuth: false,
+    );
+    _throwIfError(res);
+  }
+
+  /// Access the current bearer token (if login provided one).
+  static String? get authToken => _authToken;
+
+  // --------------- Error handling & helpers ---------------
   static void _throwIfError(http.Response res, {int minOk = 200, int maxOk = 299}) {
     if (res.statusCode < minOk || res.statusCode > maxOk) {
-      String detail = '';
-      try {
-        final body = res.body;
-        if (body.isNotEmpty) {
-          final obj = json.decode(body);
-          if (obj is Map && obj['error'] != null) {
-            detail = obj['error'].toString();
-          } else {
-            detail = body;
-          }
-        }
-      } catch (_) {
-        detail = res.body;
-      }
+      final detail = _bestErrorDetail(res.body);
       throw Exception('Server error ${res.statusCode}${detail.isNotEmpty ? ': $detail' : ''}');
     }
+  }
+
+  static String _bestErrorDetail(String body) {
+    final trimmed = body.trim();
+    if (trimmed.isEmpty) return '';
+    try {
+      final obj = json.decode(trimmed);
+      if (obj is Map) {
+        if (obj['message'] is String) return obj['message'] as String;
+        if (obj['error'] is String) return obj['error'] as String;
+        if (obj['title'] is String) return obj['title'] as String;
+        if (obj['errors'] != null) return obj['errors'].toString();
+      }
+      // If it's not a map, return the raw JSON.
+      return trimmed;
+    } catch (_) {
+      // Not JSON — return raw text.
+      return trimmed;
+    }
+  }
+
+  static Map<String, dynamic>? _tryParseJson(String body) {
+    try {
+      final obj = json.decode(body);
+      if (obj is Map<String, dynamic>) return obj;
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Tries common token field names returned by many backends.
+  static String? _extractToken(Map<String, dynamic>? obj) {
+    if (obj == null) return null;
+    final candidates = [
+      'access_token',
+      'accessToken',
+      'token',
+      'jwt',
+      'id_token',
+      'idToken',
+    ];
+    for (final k in candidates) {
+      final v = obj[k];
+      if (v is String && v.isNotEmpty) return v;
+    }
+    return null;
   }
 }

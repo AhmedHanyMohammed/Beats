@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'forgot_password.dart';
 import 'register.dart';
-import '../widgets/containers.dart';
-import '../widgets/styling.dart';
+import '../data/containers.dart';
+import '../data/styling.dart';
 import '../routes/routes.dart';
 import 'home.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
-import '../widgets/styling.dart';
-import '../widgets/containers.dart';
+import '../data/styling.dart';
+import '../data/containers.dart';
 import '../routes/routes.dart';
 import 'home.dart';
 
