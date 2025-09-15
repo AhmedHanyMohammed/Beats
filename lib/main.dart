@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pages/welcome.dart';
 import 'pages/login.dart';
+//import 'pages/widget_tree.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,9 +15,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
-      routes: {
-        '/login': (_) => const LoginPage(),
-      },
+       routes: {
+         '/login': (_) => const LoginPage(),
+       },
     );
   }
 }

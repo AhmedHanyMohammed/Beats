@@ -4,7 +4,7 @@ import 'register.dart';
 import '../data/containers.dart';
 import '../data/styling.dart';
 import '../routes/routes.dart';
-import 'home.dart';
+import 'widget_tree.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
   Route _buildHomeRoute() {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, __, ___) => const HomePage(),
+      pageBuilder: (_, __, ___) => const WidgetTree(),
       transitionsBuilder: (_, animation, __, child) {
         final offsetAnim = Tween<Offset>(
           begin: const Offset(1, 0),
