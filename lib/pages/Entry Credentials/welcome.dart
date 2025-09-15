@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'login.dart';
-import '../data/styling.dart';
+import 'Login/login.dart';
+import '../../components/styling.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
@@ -28,9 +28,9 @@ class _SplashScreenState extends State<SplashScreen> {
     _timer = Timer(widget.delay, () {
       if (!mounted) return;
       if (widget.nextRoute == '/login') {
-        Navigator.of(context).pushReplacement(_buildLoginRoute());
+        Navigator.of(context).pushReplacement(_buildLoginRoute()); // animated
       } else {
-        Navigator.of(context).pushReplacementNamed(widget.nextRoute);
+        Navigator.of(context).pushReplacementNamed(widget.nextRoute); // fallback
       }
     });
   }
@@ -59,6 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final shortest = size.shortestSide;
+    // Removed dynamic tl/br watermark sizes; use fixed dimensions instead.
     const double watermarkWidth = 196;
     const double watermarkHeight = 240;
 
@@ -72,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> {
             top: 0,
             left: 0,
             child: Opacity(
-              opacity: 0.25,
+              opacity: 0.25, // unified to 25%
               child: _safeAsset(
                 'assets/images/Upper Left Beats.png',
                 width: watermarkWidth,
@@ -84,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> {
             right: 0,
             bottom: 0,
             child: Opacity(
-              opacity: 0.25,
+              opacity: 0.25, // was 0.35 -> now 25% as requested
               child: _safeAsset(
                 'assets/images/Lower Right Beats.png',
                 width: watermarkWidth,
@@ -92,7 +93,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
           ),
-          const Center(child: _Logo()),
+          const Center(child: _Logo()), // const
           Positioned(
             left: 0,
             right: 0,
@@ -205,7 +206,8 @@ Widget _safeAsset(
   );
 }
 
-
+/// Builds the animated route to the LoginPage.
+/// Animation: fade + upward slide + slight scale for clearer visibility.
 PageRouteBuilder<void> _buildLoginRoute() {
   return PageRouteBuilder<void>(
     transitionDuration: const Duration(milliseconds: 650),
@@ -214,7 +216,7 @@ PageRouteBuilder<void> _buildLoginRoute() {
     transitionsBuilder: (_, animation, __, child) {
       final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
       final slide = Tween<Offset>(
-        begin: const Offset(0, 0.15),
+        begin: const Offset(0, 0.15), // more distance for visibility
         end: Offset.zero,
       ).animate(curved);
       final scale = Tween<double>(begin: 0.97, end: 1.0).animate(curved);

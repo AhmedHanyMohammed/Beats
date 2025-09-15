@@ -1,9 +1,9 @@
-import 'widget_tree.dart';
 import 'package:flutter/material.dart';
-import 'login.dart';
-import '../data/styling.dart';
-import '../data/containers.dart';
-import '../routes/routes.dart';
+import '../Login/login.dart';
+import '../../../components/styling.dart';
+import '../../../components/containers.dart';
+import '../../../routes/routes.dart';
+import '../../Main App/Home/home.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -98,7 +98,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Route _buildHomeRoute() {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, __, ___) => const WidgetTree(),
+      pageBuilder: (_, __, ___) => const HomePage(),
       transitionsBuilder: (_, animation, __, child) {
         final offsetAnim = Tween<Offset>(
           begin: const Offset(1, 0),
