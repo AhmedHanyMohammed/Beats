@@ -26,34 +26,40 @@ class Navbar extends StatelessWidget {
               },
             ),
           ),
-          child: NavigationBar(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
-            selectedIndex: selectedPage,
-            onDestinationSelected: (int value) {
-              selectedPageNotifier.value = value;
-            },
-            indicatorColor: primaryColor.withAlpha(41),
-            indicatorShape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            child: Material(
+              color: Colors.white,
+              child: NavigationBar(
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                selectedIndex: selectedPage,
+                onDestinationSelected: (int value) {
+                  selectedPageNotifier.value = value;
+                },
+                indicatorColor: primaryColor.withAlpha(41),
+                indicatorShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home_rounded),
+                    label: 'Home',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.add_circle_outline_rounded),
+                    selectedIcon: Icon(Icons.add_circle_rounded),
+                    label: 'New Analysis',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.history),
+                    selectedIcon: Icon(Icons.history),
+                    label: 'History',
+                  ),
+                ],
+              ),
             ),
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.add_circle_outline_rounded),
-                selectedIcon: Icon(Icons.add_circle_rounded),
-                label: 'New Analysis',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.history),
-                selectedIcon: Icon(Icons.history),
-                label: 'History',
-              ),
-            ],
           ),
         );
       },
