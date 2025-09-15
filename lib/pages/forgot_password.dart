@@ -7,10 +7,9 @@ class ForgotPasswordPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: SafeArea(
-        child: Column(
-            children: [
+        child: Center(
+            child:
               Text('Forgot Password Page'),
-            ]
         ),
       ),
     );
