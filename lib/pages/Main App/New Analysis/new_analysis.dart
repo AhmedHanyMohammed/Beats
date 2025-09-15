@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'analysis.dart';
-import 'package:beats/data/styling.dart'; // + for primaryColor
+import '../Analysis/analysis.dart';
+import '../../../components/styling.dart';
 
 enum Gender { male, female }
 

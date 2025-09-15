@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:beats/data/notifiers.dart';
-import 'package:beats/data/styling.dart';
+import '../../../components/notifiers.dart';
+import '../../../components/styling.dart';
 
 class Navbar extends StatelessWidget {
   const Navbar({super.key});

@@ -1,10 +1,10 @@
-import 'package:beats/pages/history.dart';
-import 'package:beats/pages/home.dart';
-import 'package:beats/pages/new_analysis.dart';
+import 'History/history.dart';
+import 'Home/home.dart';
+import 'New Analysis/new_analysis.dart';
 import 'package:flutter/material.dart';
-import 'package:beats/widgets/navbar.dart';
-import 'package:beats/data/notifiers.dart';
-import 'package:beats/data/styling.dart';
+import 'widgets/navbar.dart';
+import 'package:beats/components/notifiers.dart';
+import 'package:beats/components/styling.dart';
 
 const List<Widget> pages = [
   HomePage(),

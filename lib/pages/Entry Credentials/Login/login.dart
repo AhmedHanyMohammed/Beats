@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'forgot_password.dart';
-import 'register.dart';
-import '../data/containers.dart';
-import '../data/styling.dart';
-import '../routes/routes.dart';
-import 'widget_tree.dart';
+import '../Forgot Password/forgot_password.dart';
+import '../Register/register.dart';
+import '../../../components/containers.dart';
+import '../../../components/styling.dart';
+import '../../../routes/routes.dart';
+import '../../Main App/Home/home.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
   Route _buildHomeRoute() {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, __, ___) => const WidgetTree(),
+      pageBuilder: (_, __, ___) => const HomePage(),
       transitionsBuilder: (_, animation, __, child) {
         final offsetAnim = Tween<Offset>(
           begin: const Offset(1, 0),

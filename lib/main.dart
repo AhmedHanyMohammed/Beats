@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'pages/welcome.dart';
-import 'pages/login.dart';
-//import 'pages/widget_tree.dart';
+import 'pages/Entry Credentials/welcome.dart';
+import 'pages/Entry Credentials/Login/login.dart';
 
 void main() {
   runApp(const MyApp());
