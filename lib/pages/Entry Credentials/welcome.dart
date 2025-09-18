@@ -72,28 +72,24 @@ class _SplashScreenState extends State<SplashScreen> {
           Positioned(
             top: 0,
             left: 0,
-            child: Opacity(
-              opacity: 0.25, // unified to 25%
-              child: _safeAsset(
-                'assets/images/Upper Left Beats.png',
-                width: watermarkWidth,
-                height: watermarkHeight,
-              ),
+            child: _safeAsset(
+              'assets/images/Upper Left Beats.png',
+              width: watermarkWidth,
+              height: watermarkHeight,
+              opacity: 0.25,
             ),
           ),
           Positioned(
             right: 0,
             bottom: 0,
-            child: Opacity(
-              opacity: 0.25, // was 0.35 -> now 25% as requested
-              child: _safeAsset(
-                'assets/images/Lower Right Beats.png',
-                width: watermarkWidth,
-                height: watermarkHeight,
-              ),
+            child: _safeAsset(
+              'assets/images/Lower Right Beats.png',
+              width: watermarkWidth,
+              height: watermarkHeight,
+              opacity: 0.25,
             ),
           ),
-          const Center(child: _Logo()), // const
+          const Center(child: _Logo()),
           Positioned(
             left: 0,
             right: 0,
@@ -138,29 +134,29 @@ class _BackgroundGradient extends StatelessWidget {
           ),
         ),
         DecoratedBox(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: RadialGradient(
-              center: const Alignment(0.0, -0.05),
+              center: Alignment(0.0, -0.05),
               radius: 0.95,
               colors: [
-                const Color(0xFFD25C5F).withOpacity(0.16),
-                const Color(0xFFD25C5F).withOpacity(0.00),
+                Color(0x29D25C5F),
+                Color(0x00D25C5F),
               ],
-              stops: const [0.0, 1.0],
+              stops: [0.0, 1.0],
             ),
           ),
         ),
         DecoratedBox(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withOpacity(0.10),
+                Color(0x1A000000),
                 Colors.transparent,
-                Colors.black.withOpacity(0.18),
+                Color(0x2E000000),
               ],
-              stops: const [0.0, 0.55, 1.0],
+              stops: [0.0, 0.55, 1.0],
             ),
           ),
         ),
@@ -170,7 +166,7 @@ class _BackgroundGradient extends StatelessWidget {
 }
 
 class _Logo extends StatelessWidget {
-  const _Logo(); // const constructor
+  const _Logo();
   static const double targetWidth = 225.0;
   static const double targetHeight = 81.5;
   @override
@@ -195,6 +191,7 @@ Widget _safeAsset(
   double? width,
   double? height,
   BoxFit fit = BoxFit.contain,
+  double? opacity,
 }) {
   return Image.asset(
     path,
@@ -202,6 +199,7 @@ Widget _safeAsset(
     height: height,
     fit: fit,
     filterQuality: FilterQuality.high,
+    opacity: opacity != null ? AlwaysStoppedAnimation(opacity) : null,
     errorBuilder: (_, __, ___) => const SizedBox.shrink(),
   );
 }
@@ -212,11 +210,11 @@ PageRouteBuilder<void> _buildLoginRoute() {
   return PageRouteBuilder<void>(
     transitionDuration: const Duration(milliseconds: 650),
     reverseTransitionDuration: const Duration(milliseconds: 420),
-    pageBuilder: (_, __, ___) => const LoginPage(),
+    pageBuilder: (_, __, ___) =>  LoginPage(),
     transitionsBuilder: (_, animation, __, child) {
       final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
       final slide = Tween<Offset>(
-        begin: const Offset(0, 0.15), // more distance for visibility
+        begin: const Offset(0, 0.15),
         end: Offset.zero,
       ).animate(curved);
       final scale = Tween<double>(begin: 0.97, end: 1.0).animate(curved);

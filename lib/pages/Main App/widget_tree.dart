@@ -1,6 +1,6 @@
-import 'History/history.dart';
-import 'Home/home.dart';
-import 'New Analysis/new_analysis.dart';
+import 'Pages/history.dart';
+import 'Pages/home.dart';
+import 'Pages/new_analysis.dart';
 import 'package:flutter/material.dart';
 import 'widgets/navbar.dart';
 import 'package:beats/components/notifiers.dart';
@@ -30,7 +30,6 @@ class _WidgetTreeState extends State<WidgetTree> {
           'ECG Apixaban Advisor',
           style: TextStyle(color: Colors.white),
         ),
-        centerTitle: true,
       ),
       body: ValueListenableBuilder<int>(
         valueListenable: selectedPageNotifier,
