@@ -13,6 +13,7 @@ const TextStyle baseTextStyle = TextStyle(
   color: secondaryColor,
 );
 
+// Button text style
 const TextStyle buttonTextStyle = TextStyle(
   fontFamily: 'Poppins',
   fontWeight: FontWeight.w600,
@@ -20,8 +21,16 @@ const TextStyle buttonTextStyle = TextStyle(
   color: Colors.white,
 );
 
+// Heading text style
+const TextStyle headingTextStyle = TextStyle(
+  fontFamily: 'Poppins',
+  fontWeight: FontWeight.w600,
+  fontSize: 18,
+  color: Colors.black,
+);
+
 // Link text widget builder
-Text linkTextStyleBuilder(String text, {bool underline = true}) => Text(
+Text linkTextStyleBuilder(String text) => Text(
       text,
       style: TextStyle(
         fontFamily: 'Poppins',

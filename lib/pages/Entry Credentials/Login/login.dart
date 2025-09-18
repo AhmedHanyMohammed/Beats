@@ -1,107 +1,13 @@
 import 'package:flutter/material.dart';
-import '../Forgot Password/forgot_password.dart';
+import '../Forgot Password/Link Sender/forgot_password.dart';
 import '../Register/register.dart';
 import '../../../components/containers.dart';
-import '../../../components/styling.dart';
-import '../../../routes/routes.dart';
-import '../../Main App/Home/home.dart';
+import 'login_handler.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
+class LoginPage extends StatelessWidget {
+  LoginPage({super.key});
 
-class _LoginPageState extends State<LoginPage> {
-  final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  bool _obscurePassword = true;
-  bool _isLoading = false;
-  bool _showSuccess = false;
-
-  Future<void> _login() async {
-    FocusScope.of(context).unfocus();
-    final email = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Missing Information'),
-          content: email.isEmpty && password.isEmpty ? const Text('Please enter email and password') :
-          email.isEmpty ? const Text('Please enter your email') : const Text('Please enter your password'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK', style: TextStyle(color: primaryColor),),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await ApiRoutes.login(email, password);
-
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _showSuccess = true;
-      });
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(_buildHomeRoute());
-      return;
-    } catch (e) {
-      if (!mounted) return;
-      final msg = e.toString();
-      setState(() => _showSuccess = false);
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Login Failed'),
-          content: Text(msg),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            )
-          ],
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  Route _buildHomeRoute() {
-    return PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, __, ___) => const HomePage(),
-      transitionsBuilder: (_, animation, __, child) {
-        final offsetAnim = Tween<Offset>(
-          begin: const Offset(1, 0),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
-        return SlideTransition(position: offsetAnim, child: child);
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _emailCtrl.dispose();
-    _passwordCtrl.dispose();
-    super.dispose();
-  }
+  final LoginHandler _handler = LoginHandler();
 
   @override
   Widget build(BuildContext context) {
@@ -124,20 +30,21 @@ class _LoginPageState extends State<LoginPage> {
                         buildLabeledInput(
                           label: 'Email',
                           hint: 'name@example.com',
-                          controller: _emailCtrl,
+                          controller: _handler.emailCtrl,
                           keyboardType: TextInputType.emailAddress,
                         ),
                         const SizedBox(height: 20),
-                        buildLabeledInput(
-                          label: 'Password',
-                          hint: '••••••••',
-                          controller: _passwordCtrl,
-                          isPassword: true,
-                          obscure: _obscurePassword,
-                          onToggle: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _handler.obscurePassword,
+                          builder: (_, obscure, __) {
+                            return buildLabeledInput(
+                              label: 'Password',
+                              hint: '••••••••',
+                              controller: _handler.passwordCtrl,
+                              isPassword: true,
+                              obscure: obscure,
+                              onToggle: _handler.toggleObscure,
+                            );
                           },
                         ),
                         const SizedBox(height: 12),
@@ -145,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                              MaterialPageRoute(builder: (_) => ForgotPasswordPage()),
                             );
                           },
                         ),
@@ -160,11 +67,21 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
               child: Column(
                 children: [
-                  proceedButton(
-                    text: 'Log In',
-                    onPressed: _login,
-                    isLoading: _isLoading,
-                    showSuccess: _showSuccess,
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _handler.showSuccess,
+                    builder: (_, showSuccess, __) {
+                      return ValueListenableBuilder<bool>(
+                        valueListenable: _handler.isLoading,
+                        builder: (_, isLoading, __) {
+                          return proceedButton(
+                            text: 'Log In',
+                            onPressed: () => _handler.login(context),
+                            isLoading: isLoading,
+                            showSuccess: showSuccess,
+                          );
+                        },
+                      );
+                    },
                   ),
                   const SizedBox(height: 20),
                   secondOptionText(
@@ -173,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                        MaterialPageRoute(builder: (_) => RegisterPage()),
                       );
                     },
                   ),

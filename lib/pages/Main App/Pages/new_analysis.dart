@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Analysis/analysis.dart';
+import 'analysis.dart';
 import '../../../components/styling.dart';
 
 enum Gender { male, female }

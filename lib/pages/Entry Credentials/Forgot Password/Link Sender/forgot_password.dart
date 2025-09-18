@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import '../Login/login.dart';
-import '../../../components/containers.dart';
-import 'register_handler.dart';
+import '../../../../components/containers.dart';
+import '../../../../components/styling.dart';
+import '../../Login/login.dart';
+import 'forget_password_handler.dart';
 
-class RegisterPage extends StatelessWidget {
-  RegisterPage({super.key});
+class ForgotPasswordPage extends StatelessWidget {
+  ForgotPasswordPage({super.key});
 
-  final RegisterHandler _handler = RegisterHandler();
+  final ForgotPasswordHandler _handler = ForgotPasswordHandler();
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,21 @@ class RegisterPage extends StatelessWidget {
             navBackButton(context, fallback: LoginPage()),
             const SizedBox(height: 40),
             beatsLogo,
-            const SizedBox(height: 40),
+            const SizedBox(height: 70),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text('Forgot Password', style: headingTextStyle),
+            ),
+            const SizedBox(height: 8),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 46),
+              child: Text(
+                "Enter your email address and we'll send you a link to reset your password.",
+                style: baseTextStyle,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -28,32 +43,11 @@ class RegisterPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         buildLabeledInput(
-                          label: 'Name',
-                          hint: 'Your name',
-                          controller: _handler.nameCtrl,
-                        ),
-                        const SizedBox(height: 20),
-                        buildLabeledInput(
                           label: 'Email',
                           hint: 'name@example.com',
                           controller: _handler.emailCtrl,
                           keyboardType: TextInputType.emailAddress,
                         ),
-                        const SizedBox(height: 20),
-                        ValueListenableBuilder<bool>(
-                          valueListenable: _handler.obscurePassword,
-                          builder: (_, obscure, __) {
-                            return buildLabeledInput(
-                              label: 'Password',
-                              hint: '••••••••',
-                              controller: _handler.passwordCtrl,
-                              isPassword: true,
-                              obscure: obscure,
-                              onToggle: _handler.toggleObscure,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -71,23 +65,12 @@ class RegisterPage extends StatelessWidget {
                         valueListenable: _handler.isLoading,
                         builder: (_, isLoading, __) {
                           return proceedButton(
-                            text: 'Sign Up',
-                            onPressed: () => _handler.register(context),
+                            text: 'Send Reset Link',
+                            onPressed: () => _handler.sendReset(context),
                             isLoading: isLoading,
                             showSuccess: showSuccess,
                           );
                         },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  secondOptionText(
-                    prompt: 'Have an account?',
-                    actionText: 'Log in',
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => LoginPage()),
                       );
                     },
                   ),

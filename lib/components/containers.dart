@@ -114,3 +114,22 @@ Widget secondOptionText({
     ],
   );
 }
+
+Widget navBackButton(BuildContext context, {Widget? fallback}) {
+  return Align(
+    alignment: Alignment.centerLeft,
+    child: IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else if (fallback != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => fallback),
+          );
+        }
+      },
+    ),
+  );
+}

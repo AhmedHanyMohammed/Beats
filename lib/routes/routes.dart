@@ -151,6 +151,168 @@ class ApiRoutes {
   /// Access the current bearer token (if login provided one).
   static String? get authToken => _authToken;
 
+  // --------------- Internal generic helpers (new) ---------------
+  static Future<http.Response> _get(String path,
+      {Map<String, String>? query, bool withAuth = true}) async {
+    final uri = _api(path, query);
+    final res = await _client.get(uri, headers: _jsonHeaders(withAuth: withAuth));
+    return res;
+  }
+
+  // JSON first, fallback to form like _postSmart
+  static Future<http.Response> _putSmart(
+    String path,
+    Map<String, dynamic> data, {
+    bool withAuth = true,
+  }) async {
+    final uri = _api(path);
+    final res1 = await _client.put(
+      uri,
+      headers: _jsonHeaders(withAuth: withAuth),
+      body: json.encode(data),
+    );
+    if (res1.statusCode >= 200 && res1.statusCode <= 299) return res1;
+    if (res1.statusCode == 400 || res1.statusCode == 415 || res1.statusCode == 422) {
+      final formBody = <String, String>{};
+      data.forEach((k, v) => formBody[k] = v?.toString() ?? '');
+      final res2 = await _client.put(
+        uri,
+        headers: _formHeaders(withAuth: withAuth),
+        body: formBody,
+      );
+      return res2;
+    }
+    return res1;
+  }
+
+  static Future<http.Response> _delete(String path,
+      {bool withAuth = true}) async {
+    final uri = _api(path);
+    final res = await _client.delete(uri, headers: _jsonHeaders(withAuth: withAuth));
+    return res;
+  }
+
+  static dynamic _decodeBody(http.Response res) {
+    final body = res.body.trim();
+    if (body.isEmpty) return null;
+    try {
+      return json.decode(body);
+    } catch (_) {
+      return body;
+    }
+  }
+
+  // --------------- AIResponses ---------------
+  /// GET /api/AIResponses/{id}
+  static Future<Map<String, dynamic>?> getAIResponse(int id,
+      {bool withAuth = true}) async {
+    final res = await _get('/api/AIResponses/$id', withAuth: withAuth);
+    _throwIfError(res);
+    final data = _decodeBody(res);
+    return (data is Map<String, dynamic>) ? data : null;
+  }
+
+  // --------------- Doctors ---------------
+  /// GET /api/Doctors
+  static Future<List<dynamic>> getDoctors({bool withAuth = true}) async {
+    final res = await _get('/api/Doctors', withAuth: withAuth);
+    _throwIfError(res);
+    final data = _decodeBody(res);
+    if (data is List) return data;
+    return [];
+  }
+
+  /// GET /api/Doctors/{id}
+  static Future<Map<String, dynamic>?> getDoctor(String id,
+      {bool withAuth = true}) async {
+    final res = await _get('/api/Doctors/$id', withAuth: withAuth);
+    _throwIfError(res);
+    final data = _decodeBody(res);
+    return (data is Map<String, dynamic>) ? data : null;
+  }
+
+  // --------------- SessionRecords ---------------
+  /// GET /api/SessionRecords
+  static Future<List<dynamic>> listSessionRecords({bool withAuth = true}) async {
+    final res = await _get('/api/SessionRecords', withAuth: withAuth);
+    _throwIfError(res);
+    final data = _decodeBody(res);
+    if (data is List) return data;
+    return [];
+  }
+
+  /// GET /api/SessionRecords/{id}
+  static Future<Map<String, dynamic>?> getSessionRecord(int id,
+      {bool withAuth = true}) async {
+    final res = await _get('/api/SessionRecords/$id', withAuth: withAuth);
+    _throwIfError(res);
+    final data = _decodeBody(res);
+    return (data is Map<String, dynamic>) ? data : null;
+  }
+
+  /// POST /api/SessionRecords
+  static Future<Map<String, dynamic>?> createSessionRecord({
+    required int aiResponseId,
+    required int patientAge,
+    required String patientSex,
+    bool? chf,
+    bool? htn,
+    bool? dm,
+    bool? stroke,
+    bool? vascular,
+    int? cha2ds2VascScore,
+    bool withAuth = true,
+  }) async {
+    final payload = <String, dynamic>{
+      'aiResponseId': aiResponseId,
+      'patientAge': patientAge,
+      'patientSex': patientSex,
+      if (chf != null) 'chf': chf,
+      if (htn != null) 'htn': htn,
+      if (dm != null) 'dm': dm,
+      if (stroke != null) 'stroke': stroke,
+      if (vascular != null) 'vascular': vascular,
+      if (cha2ds2VascScore != null) 'cha2ds2VascScore': cha2ds2VascScore,
+    };
+    final res = await _postSmart('/api/SessionRecords', payload, withAuth: withAuth);
+    _throwIfError(res);
+    final data = _decodeBody(res);
+    return (data is Map<String, dynamic>) ? data : null;
+  }
+
+  /// PUT /api/SessionRecords/{id}
+  static Future<Map<String, dynamic>?> updateSessionRecord(
+    int id, {
+    bool? chf,
+    bool? htn,
+    bool? dm,
+    bool? stroke,
+    bool? vascular,
+    int? patientAge,
+    String? patientSex,
+    bool withAuth = true,
+  }) async {
+    final payload = <String, dynamic>{
+      if (chf != null) 'chf': chf,
+      if (htn != null) 'htn': htn,
+      if (dm != null) 'dm': dm,
+      if (stroke != null) 'stroke': stroke,
+      if (vascular != null) 'vascular': vascular,
+      if (patientAge != null) 'patientAge': patientAge,
+      if (patientSex != null) 'patientSex': patientSex,
+    };
+    final res = await _putSmart('/api/SessionRecords/$id', payload, withAuth: withAuth);
+    _throwIfError(res);
+    final data = _decodeBody(res);
+    return (data is Map<String, dynamic>) ? data : null;
+  }
+
+  /// DELETE /api/SessionRecords/{id}
+  static Future<void> deleteSessionRecord(int id, {bool withAuth = true}) async {
+    final res = await _delete('/api/SessionRecords/$id', withAuth: withAuth);
+    _throwIfError(res);
+  }
+
   // --------------- Error handling & helpers ---------------
   static void _throwIfError(http.Response res, {int minOk = 200, int maxOk = 299}) {
     if (res.statusCode < minOk || res.statusCode > maxOk) {
