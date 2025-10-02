@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../../components/containers.dart';
 import 'package:beats/components/styling.dart';
@@ -29,7 +28,6 @@ class AnalysisPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pretty = const JsonEncoder.withIndent('  ').convert(payload);
     final theme = Theme.of(context);
 
     Widget buildAiResultCard() {
@@ -144,17 +142,7 @@ class AnalysisPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
             ],
-            analysisCard(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Request Payload', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Text(pretty, style: const TextStyle(fontFamily: 'monospace')),
-                ],
-              ),
-            ),
+            // Removed Request Payload card per user request
           ],
         ),
       ),
