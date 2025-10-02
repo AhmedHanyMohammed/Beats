@@ -1,4 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--Add Camera permission here-->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Photo library / gallery access (Android 13+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Backward compatibility (Android 12 and below) -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!-- (Optional legacy write, only if your plugin still requests it; kept minimal & scoped) -->
+    <!--
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    -->
+
     <application
         android:label="beats"
         android:name="${applicationName}"

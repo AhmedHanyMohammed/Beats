@@ -3,6 +3,9 @@ import '../../../components/styling.dart';
 import '../../../routes/routes.dart';
 import '../../Main App/widget_tree.dart';
 import '../../../components/notifiers.dart';
+import '../../../routes/message_handler.dart';
+import '../../../routes/user_prefs.dart';
+import '../../../utils/validators.dart';
 
 class RegisterHandler {
   final nameCtrl = TextEditingController();
@@ -26,6 +29,7 @@ class RegisterHandler {
     final email = emailCtrl.text.trim();
     final password = passwordCtrl.text;
 
+    // Basic required fields check
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       final msg = name.isEmpty && email.isEmpty && password.isEmpty
           ? 'Please enter name, email, and password'
@@ -43,12 +47,49 @@ class RegisterHandler {
 
       await showDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Missing Information'),
           content: Text(msg),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('OK', style: TextStyle(color: primaryColor)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Email format check
+    if (!isValidEmail(email)) {
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Invalid Email'),
+          content: const Text('Please enter a valid email address.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('OK', style: TextStyle(color: primaryColor)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Password requirements check (friendly list)
+    final passErrors = passwordRequirementErrors(password);
+    if (passErrors.isNotEmpty) {
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Invalid Password'),
+          content: Text(passErrors.join('\n')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('OK', style: TextStyle(color: primaryColor)),
             ),
           ],
@@ -64,6 +105,13 @@ class RegisterHandler {
 
       if (!context.mounted) return;
 
+      // Update greeting name in-memory for home page (use first token of full name)
+      final first = name.split(RegExp(r'\s+')).first;
+      if (first.isNotEmpty) {
+        userFirstNameNotifier.value = first;
+        await UserPrefs.instance.setFirstName(first);
+      }
+
       isLoading.value = false;
       showSuccess.value = true;
       await Future.delayed(const Duration(milliseconds: 600));
@@ -73,22 +121,15 @@ class RegisterHandler {
 
       dispose();
       return;
-    } catch (e) {
+    } catch (e, st) {
       showSuccess.value = false;
+      MessageHandler.devLog(e, st);
 
       if (!context.mounted) return;
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Registration Failed'),
-          content: Text(e.toString()),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            )
-          ],
-        ),
+      await MessageHandler.showErrorDialog(
+        context,
+        title: 'Registration Failed',
+        error: e,
       );
     } finally {
       isLoading.value = false;

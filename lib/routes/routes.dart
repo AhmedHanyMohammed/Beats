@@ -252,7 +252,7 @@ class ApiRoutes {
 
   /// POST /api/SessionRecords
   static Future<Map<String, dynamic>?> createSessionRecord({
-    required int aiResponseId,
+    required int aiResponseId, // Supply 0 if AI response not yet created.
     required int patientAge,
     required String patientSex,
     bool? chf,
