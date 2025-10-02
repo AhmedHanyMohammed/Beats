@@ -3,6 +3,8 @@ import '../../../../components/styling.dart';
 import '../../../../components/notifiers.dart';
 import '../../../../routes/routes.dart';
 import '../Reset Password/new_password.dart';
+import '../../../../routes/message_handler.dart';
+import '../../../../utils/validators.dart';
 
 class ForgotPasswordHandler {
   final emailCtrl = TextEditingController();
@@ -18,12 +20,29 @@ class ForgotPasswordHandler {
     if (email.isEmpty) {
       await showDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Missing Email'),
           content: const Text('Please enter your email address'),
           actions: [
             TextButton(
-              onPressed: () => navigator.pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('OK', style: TextStyle(color: primaryColor)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Invalid Email'),
+          content: const Text('Please enter a valid email address.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('OK', style: TextStyle(color: primaryColor)),
             ),
           ],
@@ -45,21 +64,14 @@ class ForgotPasswordHandler {
       navigator.push(MaterialPageRoute(
         builder: (_) => NewPasswordPage(email: email),
       ));
-    } catch (e) {
+    } catch (e, st) {
       showSuccess.value = false;
       if (!context.mounted) return;
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('Request Failed'),
-          content: Text(e.toString()),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+      MessageHandler.devLog(e, st);
+      await MessageHandler.showErrorDialog(
+        context,
+        title: 'Request Failed',
+        error: e,
       );
     } finally {
       isLoading.value = false;

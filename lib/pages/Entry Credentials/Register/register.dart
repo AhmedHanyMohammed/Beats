@@ -14,6 +14,7 @@ class RegisterPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+            // Back button limited to the Register screen only
             navBackButton(context, fallback: LoginPage()),
             const SizedBox(height: 40),
             beatsLogo,

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'pages/Entry Credentials/welcome.dart';
 import 'pages/Entry Credentials/Login/login.dart';
+import 'routes/local_storage.dart';
+import 'routes/user_prefs.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LocalStorage.instance.load();
+  await UserPrefs.instance.load();
   runApp(const MyApp());
 }
 
